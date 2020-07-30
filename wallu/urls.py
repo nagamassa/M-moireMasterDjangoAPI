@@ -27,6 +27,7 @@ urlpatterns = [
 # ==================== path des alertes ========================
     path('wallu/alertes/', views.alerte_list, name='list_alerte'),
     path('wallu/alertes/mines/<id>/', views.mes_alertes, name='mes_alertes'),
+    path('wallu/alertes/minesProg/<id>/', views.mes_alertes_prog, name='mes_alertes_prog'),
     path('wallu/alertes/others/<id>/', views.autres_alertes, name='autres_alertes'),
     path('wallu/alertes/<pk>/', views.alerte_detail, name='detail_alerte'),
     path('wallu/alertes/<pk>/auteur/', views.alerte_auteur, name='auteur_alerte'),

@@ -235,7 +235,9 @@ def alerte_detail(request, pk):
             alerte_serializer.save()
             return JsonResponse(alerte_serializer.data)
         return JsonResponse(alerte_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    elif request.method == 'DELETE':
+        alerte.delete()
+        return HttpResponse(status=status.HTTP_204_NO_CONTENT)
 
 class PieceView(APIView):
   parser_classes = (MultiPartParser, FormParser)
@@ -328,6 +330,9 @@ def alerte_suivi_perso_details(request, pk, id):
             follower_serializer.save()
             return JsonResponse(follower_serializer.data)
         return JsonResponse(follower_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        follower.delete()
+        return HttpResponse(status=status.HTTP_204_NO_CONTENT)
 
 
 def alerte_suivi_perso_filtre(request, pk, id):
@@ -393,12 +398,15 @@ def alerte_suivi_group_data(request, pk):
 @csrf_exempt
 def alerte_suivi_group_details(request, pk, id):
     try:
-        sGroupe = SuiviAlertePerso.objects.get(pk=id)
+        sGroupe = SuiviAlerteGroupe.objects.get(pk=id)
     except SuiviAlertePerso.DoesNotExist:
         return HttpResponse(status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
-        sGroupe_serializer = SuiviAlertePersoSerializer(sGroupe)
+        sGroupe_serializer = SuiviAlerteGroupeSerializer(sGroupe)
         return JsonResponse(sGroupe_serializer.data)
+    elif request.method == 'DELETE':
+        sGroupe.delete()
+        return HttpResponse(status=status.HTTP_204_NO_CONTENT)
 
 @csrf_exempt
 def alerte_suivi_localite(request, pk):
@@ -459,6 +467,9 @@ def alerte_suivi_localite_details(request, pk, id):
     if request.method == 'GET':
         sLocalite_serializer = SuiviAlerteLocaliteSerializer(sLocalite)
         return JsonResponse(sLocalite_serializer.data)
+    elif request.method == 'DELETE':
+        sLocalite.delete()
+        return HttpResponse(status=status.HTTP_204_NO_CONTENT)
 
 @csrf_exempt
 def alerte_suivi_agence(request, pk):
@@ -567,11 +578,25 @@ def mes_alertes(request, id):
         return JsonResponse(alertes_serializer.data, safe=False)
 
 @csrf_exempt
+def mes_alertes_prog(request, id):
+    try:
+        auteur = User.objects.get(pk=id)
+        try:
+            alertes = Alerte.objects.filter(auteur=auteur, statut='Inactive', type = 'Programmée', utilisee = 'Faux')
+        except Alerte.DoesNotExist:
+            return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+    except User.DoesNotExist:
+        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'GET':
+        alertes_serializer = AlerteSerializer(alertes, many=True)
+        return JsonResponse(alertes_serializer.data, safe=False)
+
+@csrf_exempt
 def autres_alertes(request, id):
     try:
         auteur = User.objects.get(pk=id)
         try:
-            alertes = Alerte.objects.filter(suivialerteperso__follower=auteur).filter(statut="Active").exclude(auteur=auteur)
+            alertes = Alerte.objects.filter(suivialerteperso__follower=auteur).exclude(auteur=auteur)
         except Alerte.DoesNotExist:
             return HttpResponse(status=status.HTTP_404_NOT_FOUND)
     except User.DoesNotExist:
