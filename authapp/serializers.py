@@ -65,20 +65,6 @@ class SuiviAlertePersoSerializer(serializers.ModelSerializer):
 
 # ====================================================
 
-class TextAlerteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TextAlerte
-        fields = ('id','texte','dateTexte','alerte')
-
-# ====================================================
-
-class TextAlerteSugessionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TextAlerteSugession
-        fields = ('id','titre','texte','auteur')
-
-# ====================================================
-
 class CoordonneesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Coordonnees

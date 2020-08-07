@@ -277,6 +277,9 @@ def alerte_pieces_details(request, pk, id):
     if request.method == 'GET':
         piece_serializer = PieceJointeSerializer(piece)
         return JsonResponse(piece_serializer.data)
+    elif request.method == 'DELETE':
+        piece.delete()
+        return HttpResponse(status=status.HTTP_204_NO_CONTENT)
 
 @csrf_exempt
 def alerte_suivi_perso(request, pk):

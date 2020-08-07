@@ -153,21 +153,21 @@ class SuiviAlertePerso(models.Model):
         return self.follower.alias+' => '+self.reception+' => '+self.reponse+' => '+self.alerte.auteur.alias
 
 
-class TextAlerte(models.Model):
-    texte = models.TextField()
-    dateTexte = models.DateTimeField(auto_now_add=True)
-    alerte = models.ForeignKey(Alerte, on_delete=models.CASCADE)
+#class TextAlerte(models.Model):
+#    texte = models.TextField()
+#    dateTexte = models.DateTimeField(auto_now_add=True)
+#    alerte = models.ForeignKey(Alerte, on_delete=models.CASCADE)
+#
+#    def __str__(self):
+#        return self.texte+' => '+self.alerte.auteur.alias+' => '+str(self.dateTexte)
 
-    def __str__(self):
-        return self.texte+' => '+self.alerte.auteur.alias+' => '+str(self.dateTexte)
-
-class TextAlerteSugession(models.Model):
-    titre = models.CharField(max_length=20)
-    texte = models.TextField()
-    auteur = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.titre+' => '+self.auteur.alias+' => '+self.texte
+#class TextAlerteSugession(models.Model):
+#    titre = models.CharField(max_length=20)
+#    texte = models.TextField()
+#    auteur = models.ForeignKey(User, on_delete=models.CASCADE)
+#
+#    def __str__(self):
+#        return self.titre+' => '+self.auteur.alias+' => '+self.texte
 
 class Coordonnees(models.Model):
     alerte = models.ForeignKey(Alerte, on_delete=models.CASCADE,blank=True, null=True)
@@ -180,7 +180,7 @@ class Coordonnees(models.Model):
 
 
 class Article(models.Model):
-    choixbloc = [('Bloqué', 'Bloqué'), ('Débloqué', 'Débloqué')]
+    choixEtat = [('Préparation', 'Préparation'), ('Rejeté', 'Rejeté'), ('Accepté', 'Accepté'),  ('En cours de traitement', 'En cours de traitement')]
     localite = models.ForeignKey(Localite, on_delete=models.CASCADE)
     auteur = models.ForeignKey(User, on_delete=models.CASCADE)
     choixType = [('Recherché', 'Recherché'),('Fugitif', 'Fugitif'),('Possession illégale d"arme', 'Possession illégale d"arme'),('Fraude', 'Fraude'),('Corruption', 'Corruption'),('Meurtre', 'Meurtre'), ('Cambriolage', 'Cambriolage'), ('Escroquerie', 'Escroquerie'), ('Agression', 'Agression'), ('Braquage', 'Braquage'), ('Trafic de drogue', 'Trafic de drogue'), ('Disparition', 'Disparition'), ('Vol', 'Vol'), ('Enlèvement', 'Enlèvement'), ('Viol', 'Viol'), ('Autre', 'Autre')]
@@ -193,7 +193,7 @@ class Article(models.Model):
     lienPosteur = models.CharField(max_length=20, choices=choixlienPosteur)
     titre = models.CharField(max_length=100)
     details = models.TextField()
-    blocage = models.CharField(max_length=20, choices=choixbloc, default='Débloqué')
+    etat = models.CharField(max_length=30, choices=choixEtat, default='Préparation')
     dateArticle = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -263,6 +263,8 @@ class Agence(models.Model):
     phone = models.IntegerField()
     email = models.CharField(max_length=100, blank=True, null=True)
     alertes = models.ManyToManyField(Alerte, through='SuiviAlerteAgence')
+    bloques = models.ManyToManyField(Article, through='Rejet')
+
     def __str__(self):
         return self.nom+' => '+self.localite.region+' => '+self.localite.adresse
 
@@ -298,3 +300,18 @@ class SuiviAlerteAgence(models.Model):
 
     def __str__(self):
         return self.agence.nom + ' => ' +str(self.nombreReception) + ' => ' + str(self.nombreReponse) + ' => ' + self.alerte.auteur.alias
+
+class Rejet(models.Model):
+    bloqueur = models.ForeignKey(Agence, on_delete=models.CASCADE, related_name='bloqueur')
+    bloque = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='bloque')
+    raison = models.TextField()
+    dateRejet = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'Rejet'
+        constraints = [
+            models.UniqueConstraint(fields=['bloqueur', 'bloque'], name='unique_rejet')
+        ]
+
+    def __str__(self):
+        return 'bloqueur='+self.bloqueur.nom+" => bloque="+self.bloque.titre+" => "+self.raison
